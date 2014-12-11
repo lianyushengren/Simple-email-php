@@ -1,4 +1,5 @@
 <?php
+
 /**
 * 邮件发送类
 * 支持发送纯文本邮件和HTML格式的邮件，可以多收件人，多抄送，多秘密抄送，带附件(单个或多个附件),支持到服务器的ssl连接
@@ -16,7 +17,8 @@
 * $mail->setMail("test", "<b>test</b>"); //设置邮件主题、内容
 * $mail->sendMail(); //发送
 */
-class sendmail {
+class sendmail
+{
     /**
     * @var string 邮件传输代理用户名
     * @access protected
@@ -112,7 +114,8 @@ class sendmail {
     * @param boolean $isSecurity 到服务器的连接是否为安全连接，默认false
     * @return boolean
     */
-    public function setServer($server, $username="", $password="", $port=25, $isSecurity=false) {
+    public function setServer($server, $username = "", $password = "", $port = 25, $isSecurity = false)
+    {
         $this->_sendServer = $server;
         $this->_port = $port;
         $this->_isSecurity = $isSecurity;
@@ -127,7 +130,8 @@ class sendmail {
     * @param string $from 发件人地址
     * @return boolean
     */
-    public function setFrom($from) {
+    public function setFrom($from)
+    {
         $this->_from = $from;
         return true;
     }
@@ -138,7 +142,8 @@ class sendmail {
     * @param string $to 收件人地址
     * @return boolean
     */
-    public function setReceiver($to) {
+    public function setReceiver($to)
+    {
         $this->_to[] = $to;
         return true;
     }
@@ -149,7 +154,8 @@ class sendmail {
     * @param string $cc 抄送地址
     * @return boolean
     */
-    public function setCc($cc) {
+    public function setCc($cc)
+    {
         $this->_cc[] = $cc;
         return true;
     }
@@ -160,7 +166,8 @@ class sendmail {
     * @param string $bcc 秘密抄送地址
     * @return boolean
     */
-    public function setBcc($bcc) {
+    public function setBcc($bcc)
+    {
         $this->_bcc[] = $bcc;
         return true;
     }
@@ -171,9 +178,10 @@ class sendmail {
     * @param string $file 文件地址
     * @return boolean
     */
-    public function addAttachment( array $file_array) {
+    public function addAttachment(array $file_array)
+    {
         //print_r($file_array);
-        if(!file_exists($file_array[0])) {
+        if (!file_exists($file_array[0])) {
             $this->_errorMessage = "file " . $file_array[0] . " does not exist.";
             return false;
         }
@@ -190,7 +198,8 @@ class sendmail {
     * @param string $subject 邮件主体内容，可以是纯文本，也可是是HTML文本
     * @return boolean
     */
-    public function setMail($subject, $body) {
+    public function setMail($subject, $body)
+    {
         $this->_subject = base64_encode($subject);
         $this->_body = base64_encode($body);
         return true;
@@ -201,17 +210,17 @@ class sendmail {
     * @access public
     * @return boolean
     */
-    public function sendMail() {
+    public function sendMail()
+    {
         $command = $this->getCommand();
-//print_r($command);
+        // print_r($command);
         $this->_isSecurity ? $this->socketSecurity() : $this->socket();
           
         foreach ($command as $value) {
             $result = $this->_isSecurity ? $this->sendCommandSecurity($value[0], $value[1]) : $this->sendCommand($value[0], $value[1]);
-            if($result) {
+            if ($result) {
                 continue;
-            }
-            else{
+            } else {
                 return false;
             }
         }
@@ -225,8 +234,9 @@ class sendmail {
     * 返回错误信息
     * @return string
     */
-    public function error(){
-        if(!isset($this->_errorMessage)) {
+    public function error()
+    {
+        if (!isset($this->_errorMessage)) {
             $this->_errorMessage = "";
         }
         return $this->_errorMessage;
@@ -237,13 +247,14 @@ class sendmail {
     * @access protected
     * @return array
     */
-    protected function getCommand() {
+    protected function getCommand()
+    {
         $separator = "----=_Part_" . md5($this->_from . time()) . uniqid(); //分隔符
  
         $command = array(
                 array("HELO sendmail\r\n", 250)
             );
-        if(!empty($this->_userName)){
+        if (!empty($this->_userName)) {
             $command[] = array("AUTH LOGIN\r\n", 334);
             $command[] = array($this->_userName . "\r\n", 334);
             $command[] = array($this->_password . "\r\n", 235);
@@ -254,22 +265,19 @@ class sendmail {
         $header = "FROM: <" . $this->_from . ">\r\n";
  
         //设置收件人
-        if(!empty($this->_to)) {
+        if (!empty($this->_to)) {
             $count = count($this->_to);
-            if($count == 1){
+            if ($count == 1) {
                 $command[] = array("RCPT TO: <" . $this->_to[0] . ">\r\n", 250);
                 $header .= "TO: <" . $this->_to[0] .">\r\n";
-            }
-            else{
-                for($i=0; $i<$count; $i++){
+            } else {
+                for ($i=0; $i<$count; $i++) {
                     $command[] = array("RCPT TO: <" . $this->_to[$i] . ">\r\n", 250);
-                    if($i == 0){
+                    if ($i == 0) {
                         $header .= "TO: <" . $this->_to[$i] .">";
-                    }
-                    elseif($i + 1 == $count){
+                    } elseif ($i + 1 == $count) {
                         $header .= ",<" . $this->_to[$i] .">\r\n";
-                    }
-                    else{
+                    } else {
                         $header .= ",<" . $this->_to[$i] .">";
                     }
                 }
@@ -277,22 +285,19 @@ class sendmail {
         }
   
         //设置抄送
-        if(!empty($this->_cc)) {
+        if (!empty($this->_cc)) {
             $count = count($this->_cc);
-            if($count == 1){
+            if ($count == 1) {
                 $command[] = array("RCPT TO: <" . $this->_cc[0] . ">\r\n", 250);
                 $header .= "CC: <" . $this->_cc[0] .">\r\n";
-            }
-            else{
-                for($i=0; $i<$count; $i++){
+            } else {
+                for ($i=0; $i<$count; $i++) {
                     $command[] = array("RCPT TO: <" . $this->_cc[$i] . ">\r\n", 250);
-                    if($i == 0){
-                    $header .= "CC: <" . $this->_cc[$i] .">";
-                    }
-                    elseif($i + 1 == $count){
+                    if ($i == 0) {
+                        $header .= "CC: <" . $this->_cc[$i] . ">";
+                    } elseif ($i + 1 == $count) {
                         $header .= ",<" . $this->_cc[$i] .">\r\n";
-                    }
-                    else{
+                    } else {
                         $header .= ",<" . $this->_cc[$i] .">";
                     }
                 }
@@ -300,22 +305,19 @@ class sendmail {
         }
   
         //设置秘密抄送
-        if(!empty($this->_bcc)) {
+        if (!empty($this->_bcc)) {
             $count = count($this->_bcc);
-            if($count == 1) {
+            if ($count == 1) {
                 $command[] = array("RCPT TO: <" . $this->_bcc[0] . ">\r\n", 250);
                 $header .= "BCC: <" . $this->_bcc[0] .">\r\n";
-            }
-            else{
-                for($i=0; $i<$count; $i++){
+            } else {
+                for ($i=0; $i<$count; $i++) {
                     $command[] = array("RCPT TO: <" . $this->_bcc[$i] . ">\r\n", 250);
-                    if($i == 0){
-                    $header .= "BCC: <" . $this->_bcc[$i] .">";
-                    }
-                    elseif($i + 1 == $count){
+                    if ($i == 0) {
+                        $header .= "BCC: <" . $this->_bcc[$i] .">";
+                    } elseif ($i + 1 == $count) {
                         $header .= ",<" . $this->_bcc[$i] .">\r\n";
-                    }
-                    else{
+                    } else {
                         $header .= ",<" . $this->_bcc[$i] .">";
                     }
                 }
@@ -324,15 +326,13 @@ class sendmail {
   
         //主题
         $header .= "Subject: =?UTF-8?B?" . $this->_subject ."?=\r\n";
-        if(isset($this->_attachment)) {
+        if (isset($this->_attachment)) {
             //含有附件的邮件头需要声明成这个
             $header .= "Content-Type: multipart/mixed;\r\n";
-        }
-        elseif(false){
+        } elseif (false) {
             //邮件体含有图片资源的,且包含的图片在邮件内部时声明成这个，如果是引用的远程图片，就不需要了
             $header .= "Content-Type: multipart/related;\r\n";
-        }
-        else{
+        } else {
             //html或者纯文本的邮件声明成这个
             $header .= "Content-Type: multipart/alternative;\r\n";
         }
@@ -350,14 +350,23 @@ class sendmail {
         $header .= "--" . $separator . "\r\n";
  
         //加入附件
-        if(!empty($this->_attachment)){
+        if (!empty($this->_attachment)) {
             $count = count($this->_attachment);
-            for($i=0; $i<$count; $i++){
+            for ($i=0; $i<$count; $i++) {
                 $header .= "\r\n--" . $separator . "\r\n";
-                $header .= "Content-Type: " . $this->getMIMEType($this->_attachment[$i][0]) . '; name="=?UTF-8?B?' . base64_encode( basename($this->_attachment[$i][1]) ) . '?="' . "\r\n";
+                $header .= "Content-Type: " .
+                    $this->getMIMEType($this->_attachment[$i][0]) .
+                     '; name="=?UTF-8?B?' .
+                     base64_encode(basename($this->_attachment[$i][1])) .
+                     '?="' . "\r\n"
+                ;
                 //echo $header;
                 $header .= "Content-Transfer-Encoding: base64\r\n";
-                $header .= 'Content-Disposition: attachment; filename="=?UTF-8?B?' . base64_encode( basename($this->_attachment[$i][1]) ) . '?="' . "\r\n";
+                $header .= 'Content-Disposition: attachment; filename="=?UTF-8?B?' .
+                    base64_encode(basename($this->_attachment[$i][1])) .
+                     '?="' .
+                      "\r\n"
+                ;
                 $header .= "\r\n";
                 $header .= $this->readFile($this->_attachment[$i][0]);
                 $header .= "\r\n--" . $separator . "\r\n";
@@ -383,14 +392,15 @@ class sendmail {
     * @param int $code 期望服务器返回的响应吗
     * @return boolean
     */
-    protected function sendCommand($command, $code) {
+    protected function sendCommand($command, $code)
+    {
         //echo 'Send command:' . $command . ',expected code:' . $code . '<br />';
         //发送命令给服务器
-        try{
-            if(socket_write($this->_socket, $command, strlen($command))){
+        try {
+            if (socket_write($this->_socket, $command, strlen($command))) {
   
                 //当邮件内容分多次发送时，没有$code，服务器没有返回
-                if(empty($code))  {
+                if (empty($code)) {
                     return true;
                 }
   
@@ -398,26 +408,23 @@ class sendmail {
                 $data = trim(socket_read($this->_socket, 1024));
                 //echo 'response:' . $data . '<br /><br />';
   
-                if($data) {
+                if ($data) {
                     $pattern = "/^".$code."+?/";
-                    if(preg_match($pattern, $data)) {
+                    if (preg_match($pattern, $data)) {
                         return true;
-                    }
-                    else{
+                    } else {
                         $this->_errorMessage = "Error:" . $data . "|**| command:";
                         return false;
                     }
-                }
-                else{
+                } else {
                     $this->_errorMessage = "Error:" . socket_strerror(socket_last_error());
                     return false;
                 }
-            }
-            else{
+            } else {
                 $this->_errorMessage = "Error:" . socket_strerror(socket_last_error());
                 return false;
             }
-        }catch(Exception $e) {
+        } catch (Exception $e) {
             $this->_errorMessage = "Error:" . $e->getMessage();
         }
     }
@@ -429,37 +436,35 @@ class sendmail {
     * @param int $code 期望服务器返回的响应吗
     * @return boolean
     */
-    protected function sendCommandSecurity($command, $code) {
+    protected function sendCommandSecurity($command, $code)
+    {
         //echo 'Send command:' . $command . ',expected code:' . $code . '<br />';
         try {
-            if(fwrite($this->_socket, $command)){
+            if (fwrite($this->_socket, $command)) {
                 //当邮件内容分多次发送时，没有$code，服务器没有返回
-                if(empty($code))  {
+                if (empty($code)) {
                     return true;
                 }
                 //读取服务器返回
                 $data = trim(fread($this->_socket, 1024));
                 //echo 'response:' . $data . '<br /><br />';
   
-                if($data) {
+                if ($data) {
                     $pattern = "/^".$code."+?/";
-                    if(preg_match($pattern, $data)) {
+                    if (preg_match($pattern, $data)) {
                         return true;
-                    }
-                    else{
+                    } else {
                         $this->_errorMessage = "Error:" . $data . "|**| command:";
                         return false;
                     }
-                }
-                else{
+                } else {
                     return false;
                 }
-            }
-            else{
+            } else {
                 $this->_errorMessage = "Error: " . $command . " send failed";
                 return false;
             }
-        }catch(Exception $e) {
+        } catch (Exception $e) {
             $this->_errorMessage = "Error:" . $e->getMessage();
         }
     }
@@ -470,12 +475,12 @@ class sendmail {
     * @param string $file 文件
     * @return mixed
     */
-    protected function readFile($file) {
-        if(file_exists($file)) {
+    protected function readFile($file)
+    {
+        if (file_exists($file)) {
             $file_obj = file_get_contents($file);
             return base64_encode($file_obj);
-        }
-        else {
+        } else {
             $this->_errorMessage = "file " . $file . " dose not exist";
             return false;
         }
@@ -487,14 +492,14 @@ class sendmail {
     * @param string $file 文件
     * @return mixed
     */
-    protected function getMIMEType($file) {
+    protected function getMIMEType($file)
+    {
  
-                        if(!function_exists('mime_content_type')) {
+        if (!function_exists('mime_content_type')) {
+            function mime_content_type($filename)
+            {
  
-                            function mime_content_type($filename) {
- 
-                                $mime_types = array(
- 
+                $mime_types = array(
                                     'txt' => 'text/plain',
                                     'htm' => 'text/html',
                                     'html' => 'text/html',
@@ -549,32 +554,30 @@ class sendmail {
                                     'ods' => 'application/vnd.oasis.opendocument.spreadsheet',
                                 );
  
-                                $ext = strtolower(array_pop(explode('.',$filename)));
-                                if (array_key_exists($ext, $mime_types)) {
-                                    return $mime_types[$ext];
-                                }
-                                elseif (function_exists('finfo_open')) {
-                                    $finfo = finfo_open(FILEINFO_MIME);
-                                    $mimetype = finfo_file($finfo, $filename);
-                                    finfo_close($finfo);
-                                    return $mimetype;
-                                }
-                                else {
-                                    return 'application/octet-stream';
-                                }
-                            }
-                        }
+                $ext = strtolower(array_pop(explode('.', $filename)));
+
+                if (array_key_exists($ext, $mime_types)) {
+                    return $mime_types[$ext];
+                } elseif (function_exists('finfo_open')) {
+                    $finfo = finfo_open(FILEINFO_MIME);
+                    $mimetype = finfo_file($finfo, $filename);
+                    finfo_close($finfo);
+                    return $mimetype;
+                } else {
+                    return 'application/octet-stream';
+                }
+            }
+        }
  
-        if(file_exists($file)) {
+        if (file_exists($file)) {
             $mime = mime_content_type($file);
              
-            if(! preg_match("/gif|jpg|png|jpeg/", $mime) || $mime==""){
+            if (! preg_match("/gif|jpg|png|jpeg/", $mime) || $mime=="") {
                 $mime = "application/octet-stream";
             }
             //echo $mime;
             return $mime;
-        }
-        else {
+        } else {
             return false;
         }
     }
@@ -584,24 +587,26 @@ class sendmail {
     * @access protected
     * @return boolean
     */
-    protected function socket() {
+    protected function socket()
+    {
         //创建socket资源
         $this->_socket = socket_create(AF_INET, SOCK_STREAM, getprotobyname('tcp'));
           
-        if(!$this->_socket) {
+        if (!$this->_socket) {
             $this->_errorMessage = socket_strerror(socket_last_error());
             return false;
         }
   
         socket_set_block($this->_socket);//设置阻塞模式
-  
+        
+        echo "$this->_socket";
         //连接服务器
-        if(!socket_connect($this->_socket, $this->_sendServer, $this->_port)) {
+        if (!socket_connect($this->_socket, $this->_sendServer, $this->_port)) {
             $this->_errorMessage = socket_strerror(socket_last_error());
             return false;
         }
         $str = socket_read($this->_socket, 1024);
-        if(!preg_match("/220+?/", $str)){
+        if (!preg_match("/220+?/", $str)) {
             $this->_errorMessage = $str;
             return false;
         }
@@ -614,20 +619,21 @@ class sendmail {
     * @access protected
     * @return boolean
     */
-    protected function socketSecurity() {
+    protected function socketSecurity()
+    {
         $remoteAddr = "tcp://" . $this->_sendServer . ":" . $this->_port;
         $this->_socket = stream_socket_client($remoteAddr, $errno, $errstr, 30);
-        if(!$this->_socket){
+        if (!$this->_socket) {
             $this->_errorMessage = $errstr;
             return false;
         }
   
         //设置加密连接，默认是ssl，如果需要tls连接，可以查看php手册stream_socket_enable_crypto函数的解释
-        stream_socket_enable_crypto($this->_socket, true, STREAM_CRYPTO_METHOD_SSLv23_CLIENT);
+        stream_socket_enable_crypto($this->_socket, true, STREAM_CRYPTO_METHOD_SSLV23_CLIENT);
   
         stream_set_blocking($this->_socket, 1); //设置阻塞模式
         $str = fread($this->_socket, 1024);
-        if(!preg_match("/220+?/", $str)){
+        if (!preg_match("/220+?/", $str)) {
             $this->_errorMessage = $str;
             return false;
         }
@@ -640,8 +646,9 @@ class sendmail {
     * @access protected
     * @return boolean
     */
-    protected function close() {
-        if(isset($this->_socket) && is_object($this->_socket)) {
+    protected function close()
+    {
+        if (isset($this->_socket) && is_object($this->_socket)) {
             $this->_socket->close();
             return true;
         }
@@ -654,8 +661,9 @@ class sendmail {
     * @access protected
     * @return boolean
     */
-    protected function closeSecutity() {
-        if(isset($this->_socket) && is_object($this->_socket)) {
+    protected function closeSecutity()
+    {
+        if (isset($this->_socket) && is_object($this->_socket)) {
             stream_socket_shutdown($this->_socket, STREAM_SHUT_WR);
             return true;
         }

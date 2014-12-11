@@ -9,3 +9,4 @@
     $body = "hello world";
     $email->setMail($subject, $body);
     $email->sendMail();
+    echo "$email->error";
