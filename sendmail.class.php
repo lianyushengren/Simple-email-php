@@ -599,7 +599,7 @@ class sendmail
   
         socket_set_block($this->_socket);//设置阻塞模式
         
-        echo "$this->_socket";
+        // echo "$this->_socket";
         //连接服务器
         if (!socket_connect($this->_socket, $this->_sendServer, $this->_port)) {
             $this->_errorMessage = socket_strerror(socket_last_error());
